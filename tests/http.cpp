@@ -3,9 +3,6 @@
 #include "catch.hpp"
 
 #include <chaiscript/chaiscript.hpp>
-#include <chaiscript/chaiscript_stdlib.hpp>
-
-#include <iostream>
 
 /**
  * Load the HTTP library.
@@ -13,24 +10,31 @@
 #define HTTP_IMPLEMENTATION
 #include "../include/chaiscript/extras/http.hpp"
 
-#include <iostream>
-
 TEST_CASE( "HTTP functions work", "[http]" ) {
   // Build the library.
   auto httplib = chaiscript::extras::http::bootstrap();
   
-	std::cout << "Start" << std::endl;
+  // Create the ChaiScript environment.
   chaiscript::ChaiScript chai;
 
-	std::cout << "httplib" << std::endl;
-
-	std::cout << "httplib" << std::endl;
   // Add the library to the ChaiScript instance.
   chai.add(httplib);
 
-	std::cout << "http_get" << std::endl;
-  // get()
-  CHECK(chai.eval<int>("http_get()") == 5);
-	std::cout << "End" << std::endl;
-}
+  // Run all the tests.
+  chai.eval(R""(
+    var request = http_get("http://example.com/index.html")
 
+    while (http_process(request) == "pending") {
+      // TODO: Output the status?
+    }
+
+    print(to_string(request))
+    var response = to_string(request)
+    http_release(request)
+  )"");
+
+  std::string response = chai.eval<std::string>("response");
+  CHECK(response.find("Example Domain") > 10);
+
+
+}

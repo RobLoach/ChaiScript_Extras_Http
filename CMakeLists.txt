@@ -214,6 +214,7 @@ macro(ADD_CATCH_TESTS executable)
   endforeach()
 endmacro()
 
+
 # HTTP Demo
 add_executable(http_test tests/http.cpp)
 target_link_libraries(http_test ${LIBS})
