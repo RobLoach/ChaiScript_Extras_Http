@@ -22,15 +22,18 @@ TEST_CASE( "HTTP functions work", "[http]" ) {
 
   // Run all the tests.
   chai.eval(R""(
-    var request = http_get("http://example.com/index.html")
+    var request = Http("http://example.com/index.html")
 
-    while (http_process(request) == "pending") {
-      // TODO: Output the status?
+    while (request.process() == "pending") {
+      print("Please Wait...")
     }
 
-    print(to_string(request))
-    var response = to_string(request)
-    http_release(request)
+    if (request.getStatus() == "failed") {
+      print("Failed: " + request.getReasonPhrase())
+    }
+
+    global response = request.getResponseString()
+    print(response)
   )"");
 
   std::string response = chai.eval<std::string>("response");
