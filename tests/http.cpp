@@ -13,7 +13,7 @@
 TEST_CASE( "HTTP functions work", "[http]" ) {
   // Build the library.
   auto httplib = chaiscript::extras::http::bootstrap();
-  
+
   // Create the ChaiScript environment.
   chaiscript::ChaiScript chai;
 
@@ -38,6 +38,4 @@ TEST_CASE( "HTTP functions work", "[http]" ) {
 
   std::string response = chai.eval<std::string>("response");
   CHECK(response.find("Example Domain") > 10);
-
-
 }

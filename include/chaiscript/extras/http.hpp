@@ -1,4 +1,5 @@
 #include <string>
+#include <memory>
 
 #include <chaiscript/chaiscript.hpp>
 
@@ -16,17 +17,33 @@ namespace chaiscript {
 
 			class Http {
 				public:
-				Http(const std::string& url) {
+				Http(const std::string& url);
+				int getStatusCode();
+				~Http();
+				std::string process();
+				std::string getStatus();
+				std::string getContentType();
+				std::string getReasonPhrase();
+				std::string getResponseString();
+				int getResponseSize();
+				void* getResponse();
+
+				private:
+				http_t* m_request;
+			};
+
+			#ifdef HTTP_IMPLEMENTATION
+				Http::Http(const std::string& url) {
 					m_request = http_get(url.c_str(), NULL);
-				};
-				int getStatusCode(){
+				}
+				int Http::getStatusCode() {
 					return m_request->status_code;
-				};
-				~Http(){
+				}
+				Http::~Http() {
 					http_release(m_request);
 					m_request = NULL;
-				};
-				std::string process() {
+				}
+				std::string Http::process() {
 					http_status_t status = http_process(m_request);
 					switch (status) {
 						case HTTP_STATUS_PENDING:
@@ -37,9 +54,9 @@ namespace chaiscript {
 							return "failed";
 					}
 					return "unknown";
-				};
+				}
 
-				std::string getStatus() {
+				std::string Http::getStatus() {
 					switch (m_request->status) {
 						case HTTP_STATUS_PENDING:
 							return "pending";
@@ -50,29 +67,22 @@ namespace chaiscript {
 					}
 					return "unknown";
 				}
-				std::string getContentType(){
+				std::string Http::getContentType(){
 					return std::string(m_request->content_type);
-				};
-				std::string getReasonPhrase(){
+				}
+				std::string Http::getReasonPhrase(){
 					return std::string(m_request->reason_phrase);
-				};
-				std::string getResponseString() {
+				}
+				std::string Http::getResponseString() {
 	                const char* stringData = static_cast<const char*>(m_request->response_data);
 	                return std::string(stringData);
-				};
-				int getResponseSize() {
+				}
+				int Http::getResponseSize() {
 					return m_request->response_size;
-				};
-				/*void* getResponse() {
-					return m_request->response_data;
-				};*/
+				}
+			#endif
 
-				private:
-				http_t* m_request;
-			};
-
-			ModulePtr bootstrap(ModulePtr m = std::make_shared<Module>())
-			{
+			ModulePtr bootstrap(ModulePtr m = std::make_shared<Module>()) {
 				m->add(user_type<Http>(), "Http");
 				m->add(constructor<Http(const std::string&)>(), "Http");
 				m->add(fun(&Http::getStatusCode), "getStatusCode");
@@ -82,7 +92,6 @@ namespace chaiscript {
 				m->add(fun(&Http::getReasonPhrase), "getReasonPhrase");
 				m->add(fun(&Http::getResponseSize), "getResponseSize");
 				m->add(fun(&Http::getResponseString), "getResponseString");
-				//m->add(fun(&Http::getResponse), "getResponse");
 				return m;
 			}
 		}
